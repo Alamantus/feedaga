@@ -1,5 +1,6 @@
 import store from 'store';
 import RSSParser from 'rss-parser';
+import slugify from 'slugify';
 
 // import feedCache from './feedCache';
 
@@ -24,8 +25,9 @@ export default (appState, emitter) => {
       loadProcess = new Promise((resolve, reject) => {
         const fetches = [];
         storedFeeds.forEach(feedURL => {
-          if (!appState.feedsMostRecent.hasOwnProperty(feedURL)) {
-            appState.feedsMostRecent[feedURL] = new Date(0);
+          const feedSlug = slugify(feedURL);
+          if (!appState.feedsMostRecent.hasOwnProperty(feedSlug)) {
+            appState.feedsMostRecent[feedSlug] = new Date(0);
           }
           const feedPromise = new Promise((resolve, reject) => {
             rss.parseURL(CORS_PROXY + feedURL, function (err, feed) {
@@ -33,15 +35,17 @@ export default (appState, emitter) => {
                 reject(err);
               } else {
                 console.log(feed);
+                const latestCached = appState.feedsMostRecent[feedSlug];
                 for (let i = 0; i < feed.items.length; i++) {
                   const entry = feed.items[i];
                   const pubDate = new Date(entry.pubDate);
-                  if (i === 0) {
-                    if (appState.feedsMostRecent[feedURL] < pubDate) {
-                      appState.feedsMostRecent[feedURL] = pubDate;
-                    } else {
-                      break;
+                  if (latestCached < pubDate) {
+                    if (i === 0) {
+                      appState.feedsMostRecent[feedSlug] = pubDate;
                     }
+                    // cache the entry
+                  } else {
+                    break;
                   }
                   console.log(entry);
                 }

@@ -34,6 +34,7 @@
     "dexie": "^2.0.2",
     "font-awesome": "^4.7.0",
     "rss-parser": "^3.1.2",
+    "slugify": "^1.2.9",
     "store": "^2.0.12",
     "uuid": "^3.2.1"
   }

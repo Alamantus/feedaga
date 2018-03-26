@@ -33,6 +33,8 @@ export default (appState, emit) => {
   <section class="section">
     <div class="container">
       ${view}
+      ${appState.isLoadingFeeds
+        ? html`<div class="loader"></div>` : null}
     </div>
   </section>
 
