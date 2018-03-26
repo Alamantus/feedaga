@@ -10,13 +10,16 @@ export default (appState, emit) => {
     <label class="label" for="feedURL">
       RSS Feed URL
     </label>
-    <div class="control">
-      <input class="input" type="text" placeholder="http://some.blog/feed.rss" id="feedURL">
+    <div class="control has-icons-left">
+      <input class="input" type="text" placeholder="http://some.blog/feed.rss" id="feedURL" />
+      <span class="icon is-left">
+        <i class="fa fa-rss"></i>
+      </span>
     </div>
   </div>`,
   html`<div class="field">
     <div class="control">
-      <a class="button is-primary" onclick=${() => emit('add feed', document.getElementById('feedUrl').value)}>
+      <a class="button is-primary" onclick=${() => emit('add feed', document.getElementById('feedURL').value)}>
         Add
       </a>
     </div>

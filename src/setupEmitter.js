@@ -124,6 +124,7 @@ export default (appState, emitter) => {
       }
       feeds.add(feedURL);
       store.set('feeds', Array.from(feeds));
+      emitter.emit('load feeds');
     }
   });
 }
