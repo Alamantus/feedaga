@@ -1,0 +1,28 @@
+.container {
+    width: 100% !important;
+}
+
+.modal-card {
+    // Fix Bulma modal display not being centered in IE11
+    margin: 0 !important;
+}
+
+.modal-card-title {
+    // Bulma sets this class' flex-shrink to 0, which prevents text wrapping on small screens
+    // This may need to be un-tweaked, as wrapped titles shrink the modal body.
+    flex-shrink: 1 !important;
+}
+
+.card-header-title {
+    padding: 0 !important;
+}
+
+/* Hide the default drop-down button in IE */
+.select select::-ms-expand {
+    display: none;
+}
+
+/* Force select dropdowns to stay within its bounds */
+.select, .select select {
+    max-width: 100%;
+}
