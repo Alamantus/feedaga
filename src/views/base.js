@@ -42,7 +42,14 @@ export default (appState, emit) => {
             <h3 class="subtitle">Loading Feeds</h3>
             <div class="loader"></div>
           </div>
-        </div>` : null
+        </div>`
+        : html`<div class="field">
+          <div class="control">
+            <a class="button is-info" onclick=${() => emit('load feeds')}>
+              Check for New Entries
+            </a>
+          </div>
+        </div>`
       }
       ${
         appState.isLoadingCache

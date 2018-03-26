@@ -13,9 +13,7 @@ app.use((state, emitter) => {
   emitter.on('DOMContentLoaded', () => {
     setupEmitter(state, emitter);
 
-    emitter.emit('show cache', () => {
-      emitter.emit('load feeds');
-    });
+    emitter.emit('show cache');
   });
 });
 
