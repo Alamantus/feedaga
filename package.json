@@ -1,0 +1,40 @@
+{
+  "name": "feedaga",
+  "version": "0.0.1",
+  "description": "An RSS feed reader with unified comments",
+  "main": "",
+  "scripts": {
+    "dev": "parcel src/index.html"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Alamantus/feedaga.git"
+  },
+  "keywords": [
+    "rss",
+    "feed",
+    "reader",
+    "comments"
+  ],
+  "author": "Robbie Antenesse <dev@alamantus.com>",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/Alamantus/feedaga/issues"
+  },
+  "homepage": "https://github.com/Alamantus/feedaga#readme",
+  "devDependencies": {
+    "autoprefixer": "^8.2.0",
+    "parcel-bundler": "^1.6.2",
+    "postcss-node-sass": "^2.1.4"
+  },
+  "dependencies": {
+    "babel-polyfill": "^6.26.0",
+    "bulma": "^0.6.2",
+    "dexie": "^2.0.2",
+    "font-awesome": "^4.7.0",
+    "jquery": "^3.3.1",
+    "rss-parser": "^3.1.2",
+    "store": "^2.0.12",
+    "uuid": "^3.2.1"
+  }
+}
