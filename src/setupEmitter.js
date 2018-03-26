@@ -2,7 +2,7 @@ import store from 'store';
 import RSSParser from 'rss-parser';
 import slugify from 'slugify';
 
-// import feedCache from './feedCache';
+import cache from './cache';
 
 const rss = new RSSParser();
 const CORS_PROXY = 'https://cors-anywhere.herokuapp.com/';
@@ -16,55 +16,103 @@ export default (appState, emitter) => {
     }, 50);
   });
 
-  emitter.on('load feeds', () => {
-    const storedFeeds = store.get('feeds');
-    let loadProcess;
-    if (!storedFeeds) {
-      loadProcess = Promise.resolve();
-    } else {
-      loadProcess = new Promise((resolve, reject) => {
-        const fetches = [];
-        storedFeeds.forEach(feedURL => {
-          const feedSlug = slugify(feedURL);
-          if (!appState.feedsMostRecent.hasOwnProperty(feedSlug)) {
-            appState.feedsMostRecent[feedSlug] = new Date(0);
+  emitter.on('show cache', (callback = () => {}) => {
+    appState.isLoadingCache = true;
+    emitter.emit('render', () => {
+      const { fullListPage, fullListPageSize } = appState;
+      cache.entries.orderBy('pubDate').reverse()
+        .offset(fullListPage * fullListPageSize)
+        .toArray().then(entries => {
+          for (let i = 0; i < entries.length; i++) {
+            const entry = entries[i];
+            if (!appState.feedsMostRecent.hasOwnProperty(entry.feed)) {
+              appState.feedsMostRecent[entry.feed] = new Date(entry.pubDate);
+            }
           }
-          const feedPromise = new Promise((resolve, reject) => {
-            rss.parseURL(CORS_PROXY + feedURL, function (err, feed) {
-              if (err) {
-                reject(err);
-              } else {
-                console.log(feed);
-                const latestCached = appState.feedsMostRecent[feedSlug];
-                for (let i = 0; i < feed.items.length; i++) {
-                  const entry = feed.items[i];
-                  const pubDate = new Date(entry.pubDate);
-                  if (latestCached < pubDate) {
-                    if (i === 0) {
-                      appState.feedsMostRecent[feedSlug] = pubDate;
+          appState.displayedEntries = entries;
+          appState.isLoadingCache = false;
+          emitter.emit('render', callback);
+        });
+    });
+  });
+
+  emitter.on('load feeds', () => {
+    appState.isLoadingFeeds = true;
+
+    emitter.emit('render', () => {
+      const storedFeeds = store.get('feeds');
+      let loadProcess;
+      if (!storedFeeds) {
+        loadProcess = Promise.resolve();
+      } else {
+        loadProcess = new Promise((loadResolve, loadReject) => {
+          const fetches = [];
+
+          storedFeeds.forEach(feedURL => {
+            const feedSlug = slugify(feedURL);
+            if (!appState.feedsMostRecent.hasOwnProperty(feedSlug)) {
+              appState.feedsMostRecent[feedSlug] = new Date(0);
+            }
+
+            const feedPromise = new Promise((feedResolve, feedReject) => {
+              rss.parseURL(CORS_PROXY + feedURL, function (err, feed) {
+                if (err) {
+                  feedReject(err);
+                } else {
+                  console.log(feed);
+                  const latestCached = appState.feedsMostRecent[feedSlug];
+                  for (let i = 0; i < feed.items.length; i++) {
+                    const entry = feed.items[i];
+                    const pubDate = new Date(entry.pubDate);
+                    if (latestCached < pubDate) {
+                      if (i === 0) {
+                        appState.feedsMostRecent[feedSlug] = pubDate;
+                      }
+                      
+                      cache.entries.add({
+                        feed: feedURL,
+                        name: entry.title,
+                        pubDate: pubDate,
+                        author: entry.creator || entry['dc:creator'] || entry.author,
+                        content: entry.content,
+                        link: entry.link,
+                        guid: entry.guid,
+                      }).then(() => {
+                        console.info('chached entry:', entry);
+                      }).catch(error => {
+                        console.error('cache add error:', error);
+                      })
+                    } else {
+                      break;
                     }
-                    // cache the entry
-                  } else {
-                    break;
+                    // console.log(entry);
                   }
-                  console.log(entry);
+                  feedResolve();
                 }
-                resolve();
-              }
-            })
+              });
+            }).catch(error => {
+              console.error('feed error:', error);
+            });
+
+            fetches.push(feedPromise);
           });
-          fetches.push(feedPromise);
+
+          Promise.all(fetches).then(() => {
+            loadResolve();
+          }).catch((rejection) => {
+            console.error('fetches error:', rejection);
+            loadReject(rejection);
+          });
         });
-        Promise.all(fetches).then(() => {
-          resolve();
-        });
+      }
+      
+      loadProcess.then(() => {
+        appState.isLoadingFeeds = false;
+        emitter.emit('show cache');
+      }).catch(rejection => {
+        console.error('Overall load error:', rejection);
       });
-    }
-    
-    loadProcess.then(() => {
-      appState.isLoadingFeeds = false;
-      emitter.emit('render');
-    })
+    });
   });
 
   emitter.on('add feed', (feedURL) => {

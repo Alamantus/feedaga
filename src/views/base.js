@@ -1,5 +1,7 @@
 import html from 'choo/html';
 
+import fullList from './fullList';
+
 export default (appState, emit) => {
   let view;
 
@@ -33,8 +35,20 @@ export default (appState, emit) => {
   <section class="section">
     <div class="container">
       ${view}
-      ${appState.isLoadingFeeds
-        ? html`<div class="loader"></div>` : null}
+      ${
+        appState.isLoadingFeeds
+        ? html`<div class="columns">
+          <div class="column">
+            <h3 class="subtitle">Loading Feeds</h3>
+            <div class="loader"></div>
+          </div>
+        </div>` : null
+      }
+      ${
+        appState.isLoadingCache
+        ? html`<div class="loader"></div>`
+        : fullList(appState)
+      }
     </div>
   </section>
 
